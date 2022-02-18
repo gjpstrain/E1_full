@@ -1,6 +1,7 @@
 library(tidyverse)
 library(afex)
 library(emmeans)
+library(lme4)
 
 my_data <- read_csv("pav_data.csv")
 
@@ -92,3 +93,13 @@ model_passed <- aov_4(difference ~ size * present + (1 + size * present | partic
 summary(model_passed)
 
 emmeans(model_passed, pairwise ~ size * present)    
+
+# mixed model
+
+model_mixed <- lmer(difference ~ size * present + 
+                      (1 + size * present | participant) + 
+                      (1 + size * present | item), data = only_those_passed)
+
+summary(model_mixed)
+
+emmeans(model_mixed, pairwise ~ size * present)    
