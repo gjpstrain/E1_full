@@ -33,6 +33,10 @@ new_df <- just_columns %>%
   summarise(total_correct = sum(correct)) %>%
   arrange(-total_correct)
 
+new_df$passed <- new_df$total_correct > 3
+
+write_csv(new_df, "passed.csv")
+
 # The data frame new_df has two columns - participant id, and total attention check questions correct
 
 # Ignore this
