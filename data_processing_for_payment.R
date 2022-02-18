@@ -18,9 +18,9 @@ A <- rep(1:x, each = z)
 
 B <- rep(runif(z, min = 0.2, max = 0.9), x)
 
-#Up till here
-
 df <- tibble(A = rep(A, each = 6),  B = rep(B, each = 6))
+
+#Up till here
 
 dflist <- split(just_columns, just_columns$participant)
 
