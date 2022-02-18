@@ -8,6 +8,33 @@ just_columns <- raw %>%
 
 my_id <- unique(just_columns$participant)
 
+just_columns$answer = NULL
+
+if (just_columns$unique_item_no == 184){
+  just_columns$answer = 1
+}
+
+new_df <- just_columns %>%
+  mutate(answer = case_when(
+    unique_item_no == 181 ~ 0.05,
+    unique_item_no == 182 ~ 0.05,
+    unique_item_no == 183 ~ 0.05,
+    unique_item_no == 184 ~ 0.05,
+    unique_item_no == 185 ~ 0.95,
+    unique_item_no == 186 ~ 0.95,
+    unique_item_no == 187 ~ 0.95,
+    unique_item_no == 188 ~ 0.95
+  )) %>%
+  mutate(correct = case_when(
+    unique_item_no < 185 ~ slider.response < answer,
+    unique_item_no > 184 ~ slider.response > answer
+  )) %>%
+  group_by(participant) %>%
+  summarise(total_correct = sum(correct)) %>%
+  arrange(-total_correct)
+
+# The data frame new_df has two columns - participant id, and total attention check questions correct
+
 # Ignore this
 
 x = 6
