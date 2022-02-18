@@ -8,6 +8,8 @@ just_columns <- raw %>%
 
 my_id <- unique(just_columns$participant)
 
+# Ignore this
+
 x = 6
 
 z = 6
@@ -15,6 +17,8 @@ z = 6
 A <- rep(1:x, each = z)
 
 B <- rep(runif(z, min = 0.2, max = 0.9), x)
+
+#Up till here
 
 df <- tibble(A = rep(A, each = 6),  B = rep(B, each = 6))
 
