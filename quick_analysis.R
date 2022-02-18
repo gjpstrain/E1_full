@@ -51,3 +51,44 @@ model <- aov_4(difference ~ size * present + (1 + size * present | participant),
 summary(model)
 
 emmeans(model, pairwise ~ size * present)               
+
+# run analysis only on those who have passed
+
+passed <- read_csv("passed.csv") %>%
+  filter(passed == TRUE)
+
+only_those_passed <- inner_join(data_to_analyse, passed, by = "participant")
+
+# calculate descriptives
+
+only_those_passed   %>%
+  mutate(size = as.factor(size)) %>%
+  mutate(present = as.factor(present)) %>%
+  mutate(difference = my_rs - slider.response) %>%
+  filter(!is.na(size)) %>%
+  filter(!is.na(difference)) %>%
+  group_by(size, present) %>%
+  summarise(mean = mean(difference))
+
+only_those_passed   %>%
+  mutate(size = as.factor(size)) %>%
+  mutate(present = as.factor(present)) %>%
+  mutate(difference = my_rs - slider.response) %>%
+  filter(!is.na(size)) %>%
+  filter(!is.na(difference)) %>%
+  group_by(present) %>%
+  summarise(mean = mean(difference))
+
+only_those_passed  %>%
+  mutate(size = as.factor(size)) %>%
+  mutate(present = as.factor(present)) %>%
+  mutate(difference = my_rs - slider.response) %>%
+  filter(!is.na(size)) %>%
+  filter(!is.na(difference)) %>%
+  group_by(size) %>%
+  summarise(mean = mean(difference))
+
+model_passed <- aov_4(difference ~ size * present + (1 + size * present | participant), data = only_those_passed)
+summary(model_passed)
+
+emmeans(model_passed, pairwise ~ size * present)    
