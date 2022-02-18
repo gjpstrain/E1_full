@@ -16,14 +16,14 @@ if (just_columns$unique_item_no == 184){
 
 new_df <- just_columns %>%
   mutate(answer = case_when(
-    unique_item_no == 181 ~ 0.05,
-    unique_item_no == 182 ~ 0.05,
-    unique_item_no == 183 ~ 0.05,
-    unique_item_no == 184 ~ 0.05,
-    unique_item_no == 185 ~ 0.95,
-    unique_item_no == 186 ~ 0.95,
-    unique_item_no == 187 ~ 0.95,
-    unique_item_no == 188 ~ 0.95
+    unique_item_no == 181 ~ 0.1,
+    unique_item_no == 182 ~ 0.1,
+    unique_item_no == 183 ~ 0.1,
+    unique_item_no == 184 ~ 0.1,
+    unique_item_no == 185 ~ 0.9,
+    unique_item_no == 186 ~ 0.9,
+    unique_item_no == 187 ~ 0.9,
+    unique_item_no == 188 ~ 0.9
   )) %>%
   mutate(correct = case_when(
     unique_item_no < 185 ~ slider.response < answer,
@@ -38,20 +38,3 @@ new_df$passed <- new_df$total_correct > 3
 write_csv(new_df, "passed.csv")
 
 # The data frame new_df has two columns - participant id, and total attention check questions correct
-
-# Ignore this
-
-x = 6
-
-z = 6
-
-A <- rep(1:x, each = z)
-
-B <- rep(runif(z, min = 0.2, max = 0.9), x)
-
-df <- tibble(A = rep(A, each = 6),  B = rep(B, each = 6))
-
-#Up till here
-
-dflist <- split(just_columns, just_columns$participant)
-
