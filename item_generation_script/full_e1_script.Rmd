@@ -1,0 +1,509 @@
+---
+title: "Full_E1_Script"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading in Packages & Creating Folders
+
+```{r}
+library(MASS)
+library(tidyverse)
+library(Hmisc)
+library(modelr)
+library(scales)
+library(gtools)
+```
+
+## Generating Correlations
+
+```{r}
+number_of_participants = 1
+
+number_of_trials = 30
+
+set.seed(1234)
+
+my_ss <- rep(1:number_of_participants, each = number_of_trials)
+
+my_rs <- rep(runif(number_of_trials, min = 0.2, max = 0.9), number_of_participants)
+
+correlations <- tibble(my_ss = rep(my_ss, each = 6),  my_rs = rep(my_rs, each = 6))
+```
+
+## Creating the Residuals Function
+
+```{r}
+
+add_residual_function <- function(my_desired_r) {
+  
+  set.seed(1234)
+
+  my_sample_size = 128
+  
+  mean_variable_1 = 0
+  sd_variable_1 = 1
+  
+  mean_variable_2 = 0
+  sd_variable_2 = 1
+  
+  mu <- c(mean_variable_1, mean_variable_2) 
+  
+  myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+  
+  mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+  
+  corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+  
+  corr_model <- lm(V2 ~ V1, data = corr_data)
+  
+  my_residuals <- abs(residuals(corr_model))
+  
+  data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+  
+  return(sum(data_with_resid$my_residuals))
+  
+}
+```
+
+## Creating Necessary Components for For Loop
+
+```{r}
+r_vec <- correlations$my_rs
+res_vec <- c()
+```
+
+## Writing For Loop
+
+```{r}
+set.seed(1234)
+
+for(value in r_vec) {
+  new_value <- add_residual_function(value)
+  res_vec <- c(res_vec, new_value) 
+}
+```
+
+## Concatenating Correlation Data and Residuals 
+
+```{r}
+item_no <- rep(1:30, each = 6)
+full_data <- cbind(item_no, correlations, res_vec)
+```
+
+## Creating Plot: With Encoding
+
+```{r}
+set.seed(1234)
+
+my_sample_size = 128
+
+my_desired_r = 
+
+mean_variable_1 = 0
+sd_variable_1 = 1
+
+mean_variable_2 = 0
+sd_variable_2 = 1
+
+mu <- c(mean_variable_1, mean_variable_2) 
+
+myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+
+mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+
+corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+
+corr_model <- lm(V2 ~ V1, data = corr_data)
+
+my_residuals <- abs(residuals(corr_model))
+
+data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+ggplot(data_with_resid, aes(x = V1, y = V2)) +
+  geom_point(aes(alpha = -my_residuals))  +
+  #geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "None")
+
+```
+
+## Creating Plot: Without Encoding
+
+```{r}
+set.seed(1234)
+
+my_sample_size = 128
+
+my_desired_r = 
+
+mean_variable_1 = 0
+sd_variable_1 = 1
+
+mean_variable_2 = 0
+sd_variable_2 = 1
+
+mu <- c(mean_variable_1, mean_variable_2) 
+
+myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+
+mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+
+corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+
+corr_model <- lm(V2 ~ V1, data = corr_data)
+
+my_residuals <- abs(residuals(corr_model))
+
+data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+ggplot(data_with_resid, aes(x = V1, y = V2)) +
+  geom_point()  +
+  #geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "None")
+```
+
+## Function for Generating Graphs With Encoding
+
+```{r}
+# This function generates plots with the point contrast encoding (Y condition). As the experiment is 3*2, 3 x 30
+# plots are needed with the encoding, 30 of each for the small (S), medium (M), and large (L) conditions. This is 
+# accomplished by changing the second name argument in the ggsave function. See the comment on line 215 for more 
+# detail. NB This chunk must be run again to update the function when changing the size labeling.
+
+plot_generation_with_enc_function <- function(my_desired_r) {
+  set.seed(1234)
+  
+  my_sample_size = 128
+  
+  mean_variable_1 = 0
+  sd_variable_1 = 1
+  
+  mean_variable_2 = 0
+  sd_variable_2 = 1
+  
+  mu <- c(mean_variable_1, mean_variable_2) 
+  
+  myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+  
+  mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+  
+  corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+  
+  corr_model <- lm(V2 ~ V1, data = corr_data)
+  
+  my_residuals <- abs(residuals(corr_model))
+  
+  data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+test_plot <- ggplot(data_with_resid, aes(x = V1, y = V2)) +
+  geom_point(aes(alpha = -my_residuals))  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None")
+
+ggsave(test_plot,filename=paste0(counter, "S", "Y",".png"), # Currently set up to generate graphs labeled "small".
+       device = "png",                                      # Change to "M" or "L" as necessary.
+       bg = "white",
+       path = "all_plots",
+       units = "px",
+       width = 1200,
+       height = 1200,
+)
+
+return()
+}
+```
+
+## For Loop for Plot Generation With Encoding
+
+```{r}
+# This loop iterates the function above over the 30 r values in my_rs without the point contrast encoding.
+
+counter = 1
+for (value in my_rs) {
+  plot_generation_with_enc_function(value)
+  if (counter > 0) {
+    counter = counter + 1
+  }
+  }
+```
+
+## Function for Generating Graphs Without Encoding
+
+```{r}
+# This function generates plots without the point contrast encoding (N condition). As the experiment is 3*2, 3 x 30
+# plots are needed without the encoding, 30 of each for the small (S), medium (M), and large (L) conditions. This is 
+# accomplished by changing the second name argument in the ggsave function. See the comment on line 283 for more 
+# detail. NB This chunk must be run again to update the function when changing the size labeling.
+
+plot_generation_without_enc_function <- function(my_desired_r) {
+  set.seed(1234)
+  
+  my_sample_size = 128
+  
+  mean_variable_1 = 0
+  sd_variable_1 = 1
+  
+  mean_variable_2 = 0
+  sd_variable_2 = 1
+  
+  mu <- c(mean_variable_1, mean_variable_2) 
+  
+  myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+  
+  mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+  
+  corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+  
+  corr_model <- lm(V2 ~ V1, data = corr_data)
+  
+  my_residuals <- abs(residuals(corr_model))
+  
+  data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+test_plot <- ggplot(data_with_resid, aes(x = V1, y = V2)) +
+  geom_point()  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None")
+
+ggsave(test_plot,filename=paste0(counter, "S", "N",".png"), # Currently set up to generate graphs labeled small.
+       device = "png",                                      # Change to "M" or "L" as necessary.
+       bg = "white",
+       path = "all_plots",
+       units = "px",
+       width = 1200,
+       height = 1200,
+)
+
+return()
+}
+```
+
+## Loop for Generating Graphs Without Encoding
+
+```{r}
+# This loop iterates the function above over the 30 r values in my_rs without the point contrast encoding.
+
+counter = 1
+for (value in my_rs) {
+  plot_generation_without_enc_function(value)
+  if (counter > 0) {
+    counter = counter + 1
+  }
+  }
+```
+
+## Assembling .csv with plot file names, unique item numbers, r values, residuals.
+
+```{r}
+images <- mixedsort(list.files(path = "all_plots"))
+
+plot_labels <- rep(c("all_plots/"), each = 180)
+
+plots_with_labels <- paste(plot_labels, images, sep = "")
+
+final_data <- full_data %>%
+  select(-c(item_no, my_ss))
+
+unique_item_no <- c(1:180)
+
+instructions <- rep(c(""), each = 180)
+
+data_with_plots <- cbind(unique_item_no, final_data, plots_with_labels, images)
+```
+
+## Creating Masks
+
+```{r}
+mask_gen_function <- function() {
+
+x <- LETTERS[1:20]
+y <- paste0("var", seq(1,20))
+data <- expand.grid(X=x, Y=y)
+data$Z <- round(runif(400, 0, 1))
+
+mask <- ggplot(data, aes(X, Y, fill= Z)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "black") +
+  theme_void() +
+  theme(legend.position = "None")
+
+ggsave(mask,filename=paste("mask", counter,".png",sep=""),
+       device = "png",
+       bg = "white",
+       path = "masks",
+       units = "px",
+       width = 1200,
+       height = 1200,)
+}
+
+counter = 1
+for (i in 1:186) {
+  mask_gen_function()
+  if (counter > 0) {
+    counter = counter + 1
+  }
+}
+
+masks <- mixedsort(list.files(path = "masks"))
+
+mask_labels <- rep(c("masks/"), each = 186)
+
+masks_with_labels <- paste(mask_labels, masks, sep = "")
+```
+
+## Attaching height and width values to each plot, instructions column, and masks vector.
+
+```{r}
+size_w <- rep(c(0.86, 0.86, 0.34, 0.34, 0.215, 0.215), times = 30)
+
+size_h <- rep(c(0.86, 0.86, 0.34, 0.34, 0.215, 0.215), times = 30)
+
+data_with_sizes <- cbind(data_with_plots, size_h, size_w, instructions)
+```
+
+## Creating attention_check DF.
+
+```{r}
+my_rs <- rep(c(0, 1), times = c(3, 3))
+
+res_vec <- rep(c(0), times = 6)
+
+plots_with_labels <- head(plots_with_labels)
+
+images <- head(images)
+
+unique_item_no <- c(181:186)
+
+size_h <- rep(c(0.34), times = 6)
+
+size_w <- rep(c(0.34), times = 6)
+
+instructions <- rep(c("Please ignore the correlation displayed and set the slider to 0.",
+                      "Please ignore the correlation displayed and set the slider to 1."),
+                    times = c(3, 3))
+
+attention_checks <- cbind(unique_item_no, my_rs, res_vec, plots_with_labels, images,
+                          size_h, size_w, instructions)
+```
+
+## Creating the final DF by rbinding attention_checks with data_with_sizes.
+
+```{r}
+E1_full_data <- rbind(data_with_sizes, attention_checks) %>%
+  cbind(masks_with_labels)
+
+write.csv(E1_full_data, "E1_full_data.csv", row.names = FALSE)
+```
+
+## Practice Trials
+
+```{r}
+dir.create("practice_plots")
+
+number_of_participants = 1
+
+number_of_trials = 2
+
+set.seed(12345)
+
+my_ss <- rep(1:number_of_participants, each = number_of_trials)
+
+my_rs <- rep(runif(number_of_trials, min = 0.2, max = 0.9), number_of_participants)
+
+correlations <- tibble(my_ss, my_rs)
+```
+
+
+```{r}
+practice_plot_generation_without_enc_function <- function(my_desired_r) {
+  set.seed(1234)
+  
+  my_sample_size = 128
+  
+  mean_variable_1 = 0
+  sd_variable_1 = 1
+  
+  mean_variable_2 = 0
+  sd_variable_2 = 1
+  
+  mu <- c(mean_variable_1, mean_variable_2) 
+  
+  myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+  
+  mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+  
+  corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+  
+  corr_model <- lm(V2 ~ V1, data = corr_data)
+  
+  my_residuals <- abs(residuals(corr_model))
+  
+  data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+test_plot <- ggplot(data_with_resid, aes(x = V1, y = V2)) +
+  geom_point()  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None")
+
+ggsave(test_plot,filename=paste0(counter,"P",".png"), 
+       device = "png",
+       bg = "white",
+       path = "practice_plots",
+       units = "px",
+       width = 1200,
+       height = 1200,
+)
+
+return()
+}
+```
+
+```{r}
+
+counter = 1
+for (value in my_rs) {
+  practice_plot_generation_without_enc_function(value)
+  if (counter > 0) {
+    counter = counter + 1
+  }
+  }
+```
+
+```{r}
+practice_images <- mixedsort(list.files(path = "practice_plots"))
+
+size_h_p <- rep(c(0.34), times = 2)
+
+size_w_p <- rep(c(0.34), times = 2)
+
+practice_data <- cbind(practice_images, size_h_p, size_w_p)
+
+write.csv(practice_data, "practice_plots.csv", row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
