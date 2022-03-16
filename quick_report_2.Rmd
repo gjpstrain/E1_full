@@ -101,12 +101,6 @@ From pairwise comparisons, 2 conclusions can be drawn
  but no such difference when the encoding is absent. Could it be here, the encoding is driving the difference 
  seen with regards to size?
 
-# Visualising the difference
-
-```{r}
-
-```
-
 
 
 
