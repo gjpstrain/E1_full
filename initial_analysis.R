@@ -4,6 +4,8 @@ library(emmeans)
 library(lme4)
 library(buildmer)
 
+setwd("R_work/E1_data_processing")
+
 all_data <- rbind(read_csv("pav_data_a.csv"), read_csv("pav_data_b.csv"))
 
 all_passed <- rbind(read_csv("passed_a.csv"), read_csv("passed_b.csv"))
@@ -56,7 +58,7 @@ data_to_analyse <- separated_data  %>%
   filter(!is.na(difference)) %>%
   select(-c(q1_slider.response:q5_slider.response))
 
-write_csv(data_to_analyse, "data_to_analyse.csv")
+
 
 # build ANOVA
 
@@ -71,6 +73,8 @@ passed <- all_passed %>%
   filter(passed == TRUE)
 
 only_those_passed <- inner_join(data_to_analyse, passed, by = "participant")
+
+write_csv(only_those_passed, "data_to_analyse.csv")
 
 # calculate descriptives
 
