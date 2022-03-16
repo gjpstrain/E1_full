@@ -1,0 +1,119 @@
+---
+title: "Full_data_quick_report"
+author: "Gabe Strain"
+date: "14/03/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Descriptive Statistics for Conditions (All Data)
+
+```{}
+  size  present   mean
+  <fct> <fct>    <dbl>
+1 L     N       0.115 
+2 L     Y       0.0945
+3 M     N       0.115 
+4 M     Y       0.116 
+5 S     N       0.135 
+6 S     Y       0.121 
+```
+
+When all data are included, there is a consistent underestimation of correlation.
+
+# ANOVA of all data
+
+There are significant effects of size, presence of the encoding, and an interaction.
+
+```{}
+Univariate Type III Repeated-Measures ANOVA Assuming Sphericity
+
+              Sum Sq num Df Error SS den Df F value    Pr(>F)    
+(Intercept)  21.5072      1  19.7568    266 289.568 < 2.2e-16 ***
+size          0.1388      2   0.9057    532  40.769 < 2.2e-16 ***
+present       0.0529      1   0.6876    266  20.477 9.107e-06 ***
+size:present  0.0335      2   0.3559    532  25.041 4.045e-11 ***
+```
+
+# Descriptives of only the participants who passed the attention check questions
+
+```{}
+size  present   mean
+  <fct> <fct>    <dbl>
+1 L     N       0.120 
+2 L     Y       0.0996
+3 M     N       0.120 
+4 M     Y       0.109 
+5 S     N       0.129 
+6 S     Y       0.116 
+```
+
+
+Descriptives change very little when only those passed are included.
+
+#ANOVA of only those who passed
+
+```{}
+Univariate Type III Repeated-Measures ANOVA Assuming Sphericity
+
+             Sum Sq num Df Error SS den Df  F value    Pr(>F)    
+(Intercept)  8.9791      1   8.4636    111 117.7604 < 2.2e-16 ***
+size         0.0179      2   0.2870    222   6.9396  0.001193 ** 
+present      0.0386      1   0.4668    111   9.1851  0.003036 ** 
+size:present 0.0024      2   0.1245    222   2.1062  0.124119  
+```
+
+The interaction effect is no longer significant, F values are much smaller, but 
+size and presence of encoding are still significant
+
+# Pairwise comparisons
+
+```{}
+contrast  estimate      SE  df t.ratio p.value
+ L N - M N -0.00025 0.00405 111  -0.062  1.0000
+ L N - S N -0.00895 0.00475 111  -1.883  0.4178
+ L N - L Y  0.02040 0.00563 111   3.622  0.0058 **SIG**
+ L N - M Y  0.01156 0.00594 111   1.945  0.3806
+ L N - S Y  0.00434 0.00649 111   0.668  0.9850
+ M N - S N -0.00870 0.00341 111  -2.548  0.1194
+ M N - L Y  0.02065 0.00618 111   3.343  0.0141 **SIG**
+ M N - M Y  0.01181 0.00563 111   2.096  0.2972
+ M N - S Y  0.00459 0.00563 111   0.815  0.9643
+ S N - L Y  0.02935 0.00680 111   4.315  0.0005 **SIG**
+ S N - M Y  0.02050 0.00599 111   3.421  0.0110 **SIG**
+ S N - S Y  0.01328 0.00563 111   2.360  0.1795
+ L Y - M Y -0.00884 0.00406 111  -2.179  0.2561
+ L Y - S Y -0.01606 0.00452 111  -3.557  0.0071 **SIG**
+ M Y - S Y -0.00722 0.00345 111  -2.095  0.2974
+
+```
+
+
+From pairwise comparisons, 2 conclusions can be drawn
+
+ 1. For large plots, there is a significant difference between encoding presence and absence.
+ 2. When the encoding is present, there is a significant difference in perception between Large and Small plots,
+ but no such difference when the encoding is absent. Could it be here, the encoding is driving the difference 
+ seen with regards to size?
+
+# Visualising the difference
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
