@@ -3,6 +3,8 @@ library(afex)
 library(emmeans)
 library(lme4)
 library(buildmer)
+library(gridExtra)
+library(wesanderson)
 
 setwd("R_work/E1_data_processing")
 
@@ -24,7 +26,9 @@ separated_data <-
            "q1_slider.response", "q2_slider.response",
            "q3_slider.response", "q4_slider.response",
            "q5_slider.response", "res_vec", "unique_item_no",
-           "my_rs", "slider.response", "age_textbox.text"))
+           "my_rs", "slider.response", "age_textbox.text")) %>%
+  filter(unique_item_no < 181)
+
 
 # plot data
 
@@ -62,7 +66,7 @@ data_to_analyse <- separated_data  %>%
 
 # build ANOVA
 
-model <- aov_4(difference ~ size * present + (1 + size * present | participant), data = data_to_analyse)
+model <- aov_4(difference ~ size * present + (1 + size * present | participant), data = only_those_passed)
 summary(model)
 
 emmeans(model, pairwise ~ size * present)               
@@ -94,7 +98,7 @@ only_those_passed   %>%
   filter(!is.na(size)) %>%
   filter(!is.na(difference)) %>%
   group_by(present) %>%
-  summarise(mean = mean(difference))
+  summarise(mean = mean(difference), sd = sd(difference))
 
 only_those_passed  %>%
   mutate(size = as.factor(size)) %>%
@@ -108,7 +112,17 @@ only_those_passed  %>%
 model_passed <- aov_4(difference ~ size * present + (1 + size * present | participant), data = only_those_passed)
 summary(model_passed)
 
-emmeans(model_passed, pairwise ~ present)    
+emmeans(model_passed, pairwise ~ present)
+
+# Manually Modelling
+
+manual_model <- lmer(difference ~ size * present +
+       (1 | participant) +
+       (1 | item),
+     data = only_those_passed)
+
+emmeans(manual_model, pairwise ~ size)
+emmeans(manual_model, pairwise ~ present)
 
 # Modelling with **buildmer**
 
@@ -123,11 +137,56 @@ model <- buildmer(difference ~ size * present +
 emmeans(model@model, pairwise ~ size)
 emmeans(model@model, pairwise ~ present)
 
-summary(model)
 
-mod2 <- lmer(difference ~ size * present +
-       (1 | participant) +
-       (1 | item),
-     data = only_those_passed)
+# Visualisation
 
 
+present <- only_those_passed %>%
+  filter(present == "Y") %>%
+  group_by(item) %>%
+  summarise(mean_obj = mean(my_rs),
+            mean_subj = mean(slider.response), sd_subj = sd(slider.response)) %>%
+  ggplot(aes(x = mean_obj, y = mean_subj)) +
+  geom_point() +
+  stat_smooth(method = "loess",
+              se = FALSE) +
+  geom_errorbar(aes(ymin = mean_subj-sd_subj, ymax = mean_subj+sd_subj), width = .01, colour = "forestgreen") +
+  geom_abline(intercept = 0, slope = 1) +
+  xlim(0,1) +
+  ylim(0,1) +
+  theme_minimal() +
+  labs(x = "Objective Correlation Rating",
+       y = "Subjective Correlation",
+       title = "Encoding Present")
+
+absent <- only_those_passed %>%
+  filter(present == "N") %>%
+  group_by(item) %>%
+  summarise(mean_obj = mean(my_rs),
+            mean_subj = mean(slider.response), sd_subj = sd(slider.response)) %>%
+  ggplot(aes(x = mean_obj, y = mean_subj)) +
+  geom_point() +
+  stat_smooth(method = "loess",
+              se = FALSE) +
+  geom_errorbar(aes(ymin = mean_subj-sd_subj, ymax = mean_subj+sd_subj), width = .01, colour = "forestgreen") +
+  geom_abline(intercept = 0, slope = 1) +
+  xlim(0,1) +
+  ylim(0,1) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust =0.9)) +
+  labs(x = "Objective Correlation Rating",
+       y = "Subjective Correlation",
+       title = "Encoding Absent")   
+
+final_plot <- grid.arrange(present, absent,ncol = 2, top = "Comparing Correlation Ratings")  
+
+ggsave("encoding_effect.png",plot = final_plot, width = 6000, height = 3000, units = "px", dpi = 600)
+
+# Modelling with graph literacy
+
+
+  
+  
+  
+  
+  
