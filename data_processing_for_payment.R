@@ -1,10 +1,11 @@
 library(tidyverse)
 
-raw <- read_csv("pav_data.csv")
+raw <- read_csv("data/all_data.csv")
 
 just_columns <- raw %>%
   select(c("participant", "unique_item_no", "slider.response")) %>%
-  filter(unique_item_no %in% c(181,182,183,184,185,186))
+  filter(unique_item_no %in% c(181,182,183,184,185,186)) %>%
+  mutate_all(~replace(., is.na(.), 0.5))
 
 my_id <- unique(just_columns$participant)
 
@@ -33,24 +34,20 @@ new_df <- just_columns %>%
 
 new_df$passed <- new_df$total_correct > 3
 
-write_csv(new_df, "passed.csv")
+write_csv(new_df, "data/passed.csv")
 
 # The data frame new_df has two columns - participant id, and total attention check questions correct
 
-f1 <- subset(new_df, total_correct == 5)
-
-f2 <- inner_join(just_columns, f1, by = "participant")
-
-f3 <- subset(f2, slider.response > 0.2)
-
-f4 <- subset(f3, slider.response < 0.9)
-
 # demographic data
 
-demo <- read_csv("demographics_a.csv") %>%
-  select(c("participant_id", "age", "num_rejections", "Nationality", "First Language", "prolific_score"))
+demo <- read_csv("data/full_demographics.csv") %>%
+  select(c("participant_id", "age", "num_rejections", "Nationality",
+           "First Language", "prolific_score", "time_taken", "Sex",
+           "Employment Status", "Student Status" ))
 
-passed <- read_csv("passed.csv") %>%
+passed <- read_csv("data/passed.csv") %>%
   rename(participant_id = participant)
 
-full_demographics <- inner_join(demo, passed, by = "participant_id")
+demographics <- inner_join(demo, passed, by = "participant_id")
+
+write_csv(demographics, "data/tidy_demographics.csv")

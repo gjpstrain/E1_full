@@ -101,7 +101,7 @@ set.seed(1234)
 
 my_sample_size = 128
 
-my_desired_r = 
+my_desired_r = 0.8
 
 mean_variable_1 = 0
 sd_variable_1 = 1
