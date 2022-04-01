@@ -9,6 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(knitr.include_graphics.ext = TRUE)
 ```
 
 # Performance on Correlation Estimation is Better on Larger Plots. In addition, the Presence of a Novel Contrast Encoding also Improves Performance.
@@ -29,6 +30,7 @@ library(lme4)
 library(buildmer)
 library(gridExtra)
 library(MASS)
+library(scales)
 
 all_data <- read_csv("data/final_data.csv")
 
@@ -42,7 +44,7 @@ separated_data <-
   separate(plots_with_labels, c("item", "size", "present"), sep = "-") %>%
   mutate(present = str_replace(present, pattern = ".png", replacement = "")) %>%
   mutate(item = str_replace(item, pattern = "all_plots/", replacement = "")) %>%
-  select(c("item", "size", "present", "participant",
+  dplyr::select(c("item", "size", "present", "participant",
            "q1_slider.response", "q2_slider.response",
            "q3_slider.response", "q4_slider.response",
            "q5_slider.response", "res_vec", "unique_item_no",
@@ -54,7 +56,7 @@ data_to_analyse <- separated_data  %>%
   mutate(present = as.factor(present)) %>%
   mutate(difference = my_rs - slider.response) %>%
   filter(!is.na(difference)) %>%
-  select(-c(q1_slider.response:q5_slider.response))
+  dplyr::select(-c(q1_slider.response:q5_slider.response))
 
 literacy <- all_data%>%
   filter(!is.na(q1_slider.response)) %>%
@@ -64,7 +66,7 @@ literacy <- all_data%>%
                             q3_slider.response, 
                             q4_slider.response, 
                             q5_slider.response))) %>%
-    select(participant,
+    dplyr::select(participant,
            literacy)
 
 only_those_passed <- inner_join(data_to_analyse, literacy, by = "participant")
@@ -282,7 +284,7 @@ model reveals no significant effect of total residual size for each plot: $\chi^
 ## Residual Slopes
 
 The plot below is of the type used in E1. 
-```{r}
+```{r, echo = FALSE}
 set.seed(1234)
 
 my_sample_size = 128
@@ -318,19 +320,95 @@ ggplot(data_with_resid, aes(x = V1, y = V2)) +
   theme(legend.position = "None")
 ```
 
+In this plot, the residuals for each point are linearly scaled between 0 and 1, and those
+values are used to set the contrast for each point. We are now interested in varying
+the slope of linear scaling in an attempt to fine-tune the contrast encoding effect.
+We do this using the ```rescale_mid``` function from the ```scales``` package. 
+Below are three plots. 
+
+```{r, echo = FALSE, fig.width= 10, fig.height=3.33}
+set.seed(1234)
+
+my_sample_size = 128
+
+my_desired_r = 0.8
+
+mean_variable_1 = 0
+sd_variable_1 = 1
+
+mean_variable_2 = 0
+sd_variable_2 = 1
+
+mu <- c(mean_variable_1, mean_variable_2) 
+
+myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+
+mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+
+corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+
+corr_model <- lm(V2 ~ V1, data = corr_data)
+
+my_residuals <- abs(residuals(corr_model))
+
+data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+
+scaled_residuals_low <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.75)
+scaled_residuals_high <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.25)
+scaled_residuals <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.5)
 
 
+scaled_data <- cbind(data_with_resid, scaled_residuals_low, scaled_residuals_high, scaled_residuals)
 
+s1 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-scaled_residuals_low))  +
+  #geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "None") +
+  labs(title = "Shallow Slope")
 
+s2 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-scaled_residuals))  +
+  #geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "None") +
+  labs(title = "Original Slope")
 
+s3 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-scaled_residuals_high))  +
+  #geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(legend.position = "None") +
+  labs(title = "Steep Slope")
 
+final_plot <- grid.arrange(s1, s2, s3, ncol = 3, top = "Contrast Encoding: Different Slopes") 
+```
 
+## Addressing Issues of Data Quality
 
+Despite collecting data from over 260 participants, only 118 remained after rejecting
+those who failed the attention checks. These attention checks were confirmed as
+fair by the team at prolific.co, but on the whole this made data collection more
+difficult and time-consuming than we had originally anticipated. Below are
+examples of experimental (left) and attention check (right) trials. 
 
+```{r trial, echo=FALSE, fig.cap="", out.width = "100%", out.height="25%", fig.show='hold', fig.align='center'}
+knitr::include_graphics(c("trial.png", "set_to_1_AC.png"))
+```
 
-
-
-
+To address the issues of data quality, I propose we increase the salience of the
+attention check trials by conditioning participants to read some text before
+they see the plot and set the slider. In the proposed methodology, participants
+would see text for each slide *before* the plot was displayed.
 
 
 
