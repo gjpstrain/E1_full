@@ -235,7 +235,7 @@ anova(model, model_null)
 ```
 
 An ANOVA comparing models for participant's difference scores revealed a significant difference 
-between estimations of correlation for difference levels of the two factors: $\chi^2(5) = 91.91, p <.001$.
+between estimations of correlation for different levels of the two factors: $\chi^2(5) = 91.91, p <.001$.
 
 There was no effect of an interaction between the two factors. Estimated marginal
 means and contrasts for the two factors can be seen below:
@@ -284,7 +284,7 @@ model reveals no significant effect of total residual size for each plot: $\chi^
 ## Residual Slopes
 
 The plot below is of the type used in E1. 
-```{r, echo = FALSE}
+```{r, echo = FALSE, warning=FALSE, fig.align='center'}
 set.seed(1234)
 
 my_sample_size = 128
@@ -410,7 +410,16 @@ attention check trials by conditioning participants to read some text before
 they see the plot and set the slider. In the proposed methodology, participants
 would see text for each slide *before* the plot was displayed.
 
+```{r new_normal_trial, echo=FALSE, fig.cap="", out.width = "100%", fig.show='hold', fig.align='center'}
+knitr::include_graphics("normal_trial.png")
+```
 
+Below shows the new proposed attention check trials. Red font has been used to 
+draw participants' attention.
+
+```{r at_trial, echo=FALSE, fig.cap="", out.width = "100%", fig.show='hold', fig.align='center'}
+knitr::include_graphics("at_trial.png")
+```
 
 
 
