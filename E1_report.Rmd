@@ -323,7 +323,7 @@ ggplot(data_with_resid, aes(x = V1, y = V2)) +
 In this plot, the residuals for each point are linearly scaled between 0 and 1, and those
 values are used to set the contrast for each point. We are now interested in varying
 the slope of linear scaling in an attempt to fine-tune the contrast encoding effect.
-We do this using the ```rescale_mid``` function from the ```scales``` package. 
+We do this using the ```rescale``` function from the ```scales``` package. 
 Below are three plots. 
 
 ```{r, echo = FALSE, fig.width= 10, fig.height=3.33}
@@ -353,12 +353,16 @@ my_residuals <- abs(residuals(corr_model))
 
 data_with_resid <- round(cbind(corr_data, my_residuals), 2)
 
-scaled_residuals_low <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.75)
-scaled_residuals_high <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.25)
-scaled_residuals <- rescale_mid(data_with_resid$my_residuals, to = c(0,1), mid = 0.5)
+scaled_residuals <- rescale(data_with_resid$my_residuals, 
+                            from = range(data_with_resid$my_residuals), 
+                            to = c(0, 1)) 
+scaled_residuals_low <- scaled_residuals / 1.2
+scaled_residuals_high <- scaled_residuals * 1.2
 
 
-scaled_data <- cbind(data_with_resid, scaled_residuals_low, scaled_residuals_high, scaled_residuals)
+scaled_data <- cbind(data_with_resid, scaled_residuals_low,
+                         scaled_residuals_high,
+                         scaled_residuals)
 
 s1 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
   scale_alpha_identity() +
@@ -402,7 +406,7 @@ difficult and time-consuming than we had originally anticipated. Below are
 examples of experimental (left) and attention check (right) trials. 
 
 ```{r trial, echo=FALSE, fig.cap="", out.width = "100%", out.height="25%", fig.show='hold', fig.align='center'}
-knitr::include_graphics(c("trial.png", "set_to_1_AC.png"))
+knitr::include_graphics(c("proposed_trial_amendments/trial.png", "proposed_trial_amendments/set_to_1_AC.png"))
 ```
 
 To address the issues of data quality, I propose we increase the salience of the
@@ -411,14 +415,14 @@ they see the plot and set the slider. In the proposed methodology, participants
 would see text for each slide *before* the plot was displayed.
 
 ```{r new_normal_trial, echo=FALSE, fig.cap="", out.width = "100%", fig.show='hold', fig.align='center'}
-knitr::include_graphics("normal_trial.png")
+knitr::include_graphics("proposed_trial_amendments/normal_trial.png")
 ```
 
 Below shows the new proposed attention check trials. Red font has been used to 
 draw participants' attention.
 
 ```{r at_trial, echo=FALSE, fig.cap="", out.width = "100%", fig.show='hold', fig.align='center'}
-knitr::include_graphics("at_trial.png")
+knitr::include_graphics("proposed_trial_amendments/at_trial.png")
 ```
 
 
