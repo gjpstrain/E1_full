@@ -66,13 +66,19 @@ bar_chart <- df %>%
        title = "Comparing Mean Difference Between Ratings and True r Values",
        fill = "Contrast\nEncoding",
        subtitle = "Standard Error Bars Shown") +
-  scale_x_discrete("", labels = c("Large", "Medium", "Small")) +
-  theme(axis.text.x = element_text(size = 12, face = "bold"))
+  scale_x_discrete("", labels = c("Large", "Medium", "Small"))
+
 
 ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600, bg = "white")
 
+# Use the following for larger text; suitable for posters
 
-
+theme(axis.text.x = element_text(size = 20),
+      axis.text.y = element_text(size = 20),
+      axis.title.y = element_blank(),
+      plot.title = element_text(size = 19, face = "bold"),
+      legend.text = element_text(size = 15),
+      legend.title = element_text(size = 18))
 
 
 
