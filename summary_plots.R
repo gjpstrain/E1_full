@@ -5,6 +5,8 @@ library(scales)
 
 theme_set(theme_pubr())
 
+# You need to run the first chunk from E1_report.rmd before using this script
+
 # Create mean error curve plot
 
 curve_plot <- only_those_passed %>%
@@ -67,7 +69,7 @@ bar_chart <- df %>%
   scale_x_discrete("", labels = c("Large", "Medium", "Small")) +
   theme(axis.text.x = element_text(size = 12, face = "bold"))
 
-ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600)
+ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600, bg = "white")
 
 
 
