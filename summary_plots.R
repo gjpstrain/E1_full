@@ -1,11 +1,13 @@
 library(tidyverse)
 library(hablar)
 library(ggpubr)
+library(scales)
 
 theme_set(theme_pubr())
 
+# Create mean error curve plot
 
-p1 <-only_those_passed %>%
+curve_plot <- only_those_passed %>%
   group_by(item) %>%
   summarise(mean_obj = mean(my_rs),
             mean_subj = mean(slider.response), sd_subj = sd(slider.response)) %>%
@@ -23,41 +25,51 @@ p1 <-only_those_passed %>%
        y = "Subjective Correlation",
        title = "Mean Correlation Bias Over All Conditions")
 
+# Create df for plotting barplot
+
 df <- all_data %>%
   filter(!is.na(my_rs)) %>%
   dplyr::select("plots_with_labels", "my_rs",
                 "slider.response") %>%
   mutate(plots_with_labels = str_replace(plots_with_labels, pattern = ".png", replacement = "")) %>%
   mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "all_plots/", replacement = "")) %>%
+  mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "S", replacement = "S-")) %>%
+  mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "M", replacement = "M-")) %>%
+  mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "L", replacement = "L-")) %>%
+  mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "N", replacement = "Off")) %>%
+  mutate(plots_with_labels = str_replace(plots_with_labels, pattern = "Y", replacement = "On")) %>%
+  separate(plots_with_labels, c("size", "present"), sep = "-") %>%
   mutate(difference = my_rs - slider.response) %>%
   filter(my_rs != 0) %>%
   filter(my_rs != 1) %>%
-  convert(fct("plots_with_labels"),
+  convert(fct("size", "present"),
           dbl("difference"))
-  
 
-df$plots_with_labels <- gsub('[0-9.]', '', df$plots_with_labels)
+# Use gsub to remove item numbers (not relevant)  
 
-p2 <- df %>%
-  group_by(plots_with_labels) %>%
-  ggplot(aes(x = reorder(plots_with_labels, difference, na.rm = TRUE),
-             y = difference, color = plots_with_labels )) +
-  geom_boxplot() +
-  theme_minimal() +
-  theme(legend.position = "none") +
-  scale_x_discrete("", labels = c("Large\nEncoding Present",
-                                        "Medium\nEncoding Present",
-                                        "Small\nEncoding Present",
-                                        "Large\nEncoding Absent",
-                                        "Medium\nEncoding Absent",
-                                        "Small\nEncoding Absent")) +
+df$size <- gsub('[0-9.]', '', df$size)
+
+# Create bar chart
+
+bar_chart <- df %>%
+  ggplot(aes(x = reorder(size, -difference),
+             y = difference, fill = present)) +
+  geom_bar(position = position_dodge2(reverse = TRUE, padding = 0),
+           stat = "summary", fun.y = "mean", color = "black") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = .3,
+               position = position_dodge(-.9)) +
+ theme_minimal() +
   labs(x = "Condition",
-       y = "Difference",
-       title = "Comparing Mean Difference Between Ratings and True r Values")
+       y = "Mean Bias",
+       title = "Comparing Mean Difference Between Ratings and True r Values",
+       fill = "Contrast\nEncoding",
+       subtitle = "Standard Error Bars Shown") +
+  scale_x_discrete("", labels = c("Large", "Medium", "Small")) +
+  theme(axis.text.x = element_text(size = 12, face = "bold"))
 
-combined_figure <- ggarrange(p1,p2, ncol = 1)
+ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600)
 
-ggsave("figure_MVN.png", combined_figure, height = 15, width = 7.5, dpi = 800)
+
 
 
 
