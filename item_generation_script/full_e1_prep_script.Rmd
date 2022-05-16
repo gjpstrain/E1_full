@@ -37,7 +37,6 @@ correlations <- tibble(my_ss = rep(my_ss, each = 6),  my_rs = rep(my_rs, each = 
 ## Creating the Residuals Function
 
 ```{r}
-
 add_residual_function <- function(my_desired_r) {
   
   set.seed(1234)
@@ -97,11 +96,11 @@ full_data <- cbind(item_no, correlations, res_vec)
 ## Creating Plot: With Encoding
 
 ```{r}
-set.seed(1234)
+#set.seed(1234)
 
 my_sample_size = 128
 
-my_desired_r = 0.8
+my_desired_r = 0
 
 mean_variable_1 = 0
 sd_variable_1 = 1
@@ -128,8 +127,9 @@ ggplot(data_with_resid, aes(x = V1, y = V2)) +
   #geom_smooth(method = "lm", se = FALSE) +
   labs(x = "", y = "") +
   theme_classic() +
-  theme(axis.text = element_blank()) +
-  theme(legend.position = "None")
+  #theme(axis.text = element_blank()) +
+  theme(legend.position = "None") +
+    scale_y_continuous(breaks = round(seq(min(data_with_resid$V2), max(data_with_resid$V1), by = 0.2),1))
 
 ```
 
