@@ -96,7 +96,7 @@ full_data <- cbind(item_no, correlations, res_vec)
 ## Creating Plot: With Encoding
 
 ```{r}
-#set.seed(1234)
+set.seed(1234)
 
 my_sample_size = 128
 
