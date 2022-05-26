@@ -320,18 +320,30 @@ ggplot(data_with_resid, aes(x = V1, y = V2)) +
   theme(legend.position = "None")
 ```
 
-In this plot, the residuals for each point are linearly scaled between 0 and 1, and those
-values are used to set the contrast for each point. We are now interested in varying
-the slope of linear scaling in an attempt to fine-tune the contrast encoding effect.
-We do this using the ```rescale``` function from the ```scales``` package. 
-Below are three plots. 
+With this method, the residuals for each point were scaled between 0 and 1, and 
+used as the contrast for that point. The issue with this, as we only realised after
+analysing the results of the first experiment, is that there is no direct mapping of
+residual size to contrast for a point. The highest residual for a particular point 
+had the lowest contrast, and vice versa.
 
-```{r, echo = FALSE, fig.width= 10, fig.height=3.33}
+In order to fix this, instead of scaling between 0 and 1, we propose
+performing a transformation on the raw residual itself so that it is 
+between 0 and 1, and then using this transformed residual as the contrast value.
+
+The plot below illustrates what we are now calling the decay parameter, both 
+with a linear decay, and with several non-linear functions. The non-linear functions
+take the formula $y = 1-(a)^x$, where $a < 1$ and $x = residual$. Becuase the lowest
+*r* value (and therefore plot with the highest residuals) used is 0.2, that has been 
+used to illustrate the different parameters of the decay function.
+
+```{r, echo = FALSE, warning=FALSE, fig.align='center'}
+library(MASS)
+
 set.seed(1234)
 
+my_desired_r = 0.2
+  
 my_sample_size = 128
-
-my_desired_r = 0.8
 
 mean_variable_1 = 0
 sd_variable_1 = 1
@@ -353,50 +365,99 @@ my_residuals <- abs(residuals(corr_model))
 
 data_with_resid <- round(cbind(corr_data, my_residuals), 2)
 
-scaled_residuals <- rescale(data_with_resid$my_residuals, 
-                            from = range(data_with_resid$my_residuals), 
-                            to = c(0, 1)) 
-scaled_residuals_low <- scaled_residuals / 1.2
-scaled_residuals_high <- scaled_residuals * 1.2
+slopes <- data_with_resid %>%
+  mutate(slope_linear = my_residuals/3.2) %>%
+  mutate(slope_0.125 = 1-(0.125)^my_residuals) %>%
+  mutate(slope_0.25 = 1-(0.25)^my_residuals) %>%
+  mutate(slope_0.5 = 1-(0.5)^my_residuals) %>%
+  pivot_longer(cols = starts_with("sl"),
+               names_to = c("slope"),
+               values_to = "transformed_residual")
 
-
-scaled_data <- cbind(data_with_resid, scaled_residuals_low,
-                         scaled_residuals_high,
-                         scaled_residuals)
-
-s1 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
-  scale_alpha_identity() +
-  geom_point(aes(alpha = 1-scaled_residuals_low))  +
-  #geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "", y = "") +
-  theme_classic() +
-  theme(axis.text = element_blank()) +
-  theme(legend.position = "None") +
-  labs(title = "Shallow Slope")
-
-s2 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
-  scale_alpha_identity() +
-  geom_point(aes(alpha = 1-scaled_residuals))  +
-  #geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "", y = "") +
-  theme_classic() +
-  theme(axis.text = element_blank()) +
-  theme(legend.position = "None") +
-  labs(title = "Original Slope")
-
-s3 <- ggplot(scaled_data, aes(x = V1, y = V2)) +
-  scale_alpha_identity() +
-  geom_point(aes(alpha = 1-scaled_residuals_high))  +
-  #geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "", y = "") +
-  theme_classic() +
-  theme(axis.text = element_blank()) +
-  theme(legend.position = "None") +
-  labs(title = "Steep Slope")
-
-final_plot <- grid.arrange(s1, s2, s3, ncol = 3, top = "Contrast Encoding: Different Slopes") 
+slopes %>%
+  ggplot(aes(x = my_residuals, y = transformed_residual)) +
+  geom_line(aes(colour = slope))
 ```
+ 
+Below are scatterplots all with *r* = 0.6, each labelled with the decay
+parameter used.
 
+```{r,echo = FALSE, warning=FALSE, fig.align='center'}
+  set.seed(1234)
+  
+  my_sample_size = 128
+  
+  my_desired_r = 0.6
+  
+  mean_variable_1 = 0
+  sd_variable_1 = 1
+  
+  mean_variable_2 = 0
+  sd_variable_2 = 1
+  
+  mu <- c(mean_variable_1, mean_variable_2) 
+  
+  myr <- my_desired_r * sqrt(sd_variable_1) * sqrt(sd_variable_2)
+  
+  mysigma <- matrix(c(sd_variable_1, myr, myr, sd_variable_2), 2, 2) 
+  
+  corr_data = as_tibble(mvrnorm(my_sample_size, mu, mysigma, empirical = TRUE))
+  
+  corr_model <- lm(V2 ~ V1, data = corr_data)
+  
+  my_residuals <- abs(residuals(corr_model))
+  
+  data_with_resid <- round(cbind(corr_data, my_residuals), 2)
+  
+  slopes <- data_with_resid %>%
+  mutate(slope_linear = my_residuals/3.2) %>%
+  mutate(slope_0.125 = 1-(0.125)^my_residuals) %>%
+  mutate(slope_0.25 = 1-(0.25)^my_residuals) %>%
+  mutate(slope_0.5 = 1-(0.5)^my_residuals)
+
+p.125 <- ggplot(slopes, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-slope_0.125))  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None") +
+  labs(title = "Steepest Decay (a = 0.125)")
+  
+
+p.25 <- ggplot(slopes, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-slope_0.25))  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None") +
+  labs(title = "Flatter Decay (a = 0.25)")
+
+p.5 <- ggplot(slopes, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-slope_0.5))  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None") +
+  labs(title = "Flattest Non-Linear Decay (a = 0.5)")
+
+p.linear <- ggplot(slopes, aes(x = V1, y = V2)) +
+  scale_alpha_identity() +
+  geom_point(aes(alpha = 1-slope_linear))  +
+  labs(x = "", y = "") +
+  theme_classic() +
+  theme(axis.text = element_blank()) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm")) +
+  theme(legend.position = "None") +
+  labs(title = "Linear Decay")
+
+final_plot <- grid.arrange(p.125, p.25, p.5, p.linear, ncol = 2) 
+```
 ## Addressing Issues of Data Quality
 
 Despite collecting data from over 260 participants, only 118 remained after rejecting

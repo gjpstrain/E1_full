@@ -62,11 +62,18 @@ bar_chart <- df %>%
                position = position_dodge(-.9)) +
  theme_minimal() +
   labs(x = "Condition",
-       y = "Mean Bias",
+       y = "Mean Error",
        title = "Comparing Mean Difference Between Ratings and True r Values",
        fill = "Contrast\nEncoding",
        subtitle = "Standard Error Bars Shown") +
-  scale_x_discrete("", labels = c("Large", "Medium", "Small"))
+  scale_x_discrete("", labels = c("Large", "Medium", "Small")) +
+  theme(axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.y = element_text(size = 25),
+        plot.title = element_text(size = 19, face = "bold"),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18))
+
 
 
 ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600, bg = "white")
