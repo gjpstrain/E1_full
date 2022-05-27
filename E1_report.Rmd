@@ -234,8 +234,9 @@ model_null <- lmer(difference ~ 1 +
 anova(model, model_null)
 ```
 
-An ANOVA comparing models for participant's difference scores revealed a significant difference 
-between estimations of correlation for different levels of the two factors: $\chi^2(5) = 91.91, p <.001$.
+An ANOVA comparing models with and without our interventions revealed a significant
+effect $\chi^2(5)=91.91, p < .0001$. This effect was driven ratings being significantly 
+higher for Large vs Small plots ($p = .001$) and Medium vs Small plots ($p = .025$), and being higher when the contrast encoding was employed ($p < .0001$).
 
 There was no effect of an interaction between the two factors. Estimated marginal
 means and contrasts for the two factors can be seen below:
@@ -260,7 +261,7 @@ anova(model_lit, model)
 ```
   
 An ANOVA between the model including literacy as a fixed effect and the original 
-model reveals no significant effect of graph literacy: $\chi^2=2.33(1), p = 0.13$.
+model reveals no significant effect of graph literacy: $\chi^2(1)=2.33, p = 0.13$.
 
 ## Modelling with Residuals
 
@@ -277,7 +278,7 @@ anova(model_res, model)
 ```
 
 An ANOVA between the model including total residuals as a fixed effect and the original
-model reveals no significant effect of total residual size for each plot: $\chi^2(1) = 2.31, p = 0.13$
+model reveals no significant effect of total residual size for each plot: $\chi^2(1) = 2.31, p = 0.13$.
 
 # Where Next?
 
@@ -332,7 +333,7 @@ between 0 and 1, and then using this transformed residual as the contrast value.
 
 The plot below illustrates what we are now calling the decay parameter, both 
 with a linear decay, and with several non-linear functions. The non-linear functions
-take the formula $y = 1-(a)^x$, where $a < 1$ and $x = residual$. Becuase the lowest
+take the formula $y = 1-(a)^x$, where $a < 1$ and $x = residual$. Because the lowest
 *r* value (and therefore plot with the highest residuals) used is 0.2, that has been 
 used to illustrate the different parameters of the decay function.
 
