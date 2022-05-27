@@ -336,7 +336,7 @@ take the formula $y = 1-(a)^x$, where $a < 1$ and $x = residual$. Becuase the lo
 *r* value (and therefore plot with the highest residuals) used is 0.2, that has been 
 used to illustrate the different parameters of the decay function.
 
-```{r, echo = FALSE, warning=FALSE, fig.align='center'}
+```{r, echo = FALSE, warning=FALSE, fig.align='center', out.width="80%"}
 library(MASS)
 
 set.seed(1234)
@@ -366,17 +366,16 @@ my_residuals <- abs(residuals(corr_model))
 data_with_resid <- round(cbind(corr_data, my_residuals), 2)
 
 slopes <- data_with_resid %>%
-  mutate(slope_linear = my_residuals/3.2) %>%
-  mutate(slope_0.125 = 1-(0.125)^my_residuals) %>%
-  mutate(slope_0.25 = 1-(0.25)^my_residuals) %>%
-  mutate(slope_0.5 = 1-(0.5)^my_residuals) %>%
-  pivot_longer(cols = starts_with("sl"),
-               names_to = c("slope"),
+  mutate(decay_linear = my_residuals/3.2) %>%
+  mutate(decay_0.125 = 1-(0.125)^my_residuals) %>%
+  mutate(decay_0.25 = 1-(0.25)^my_residuals) %>%
+  pivot_longer(cols = starts_with("de"),
+               names_to = c("decay"),
                values_to = "transformed_residual")
 
 slopes %>%
   ggplot(aes(x = my_residuals, y = transformed_residual)) +
-  geom_line(aes(colour = slope))
+  geom_line(aes(colour = decay))
 ```
  
 Below are scatterplots all with *r* = 0.6, each labelled with the decay
@@ -436,7 +435,7 @@ p.25 <- ggplot(slopes, aes(x = V1, y = V2)) +
   theme(legend.position = "None") +
   labs(title = "Flatter Decay (a = 0.25)")
 
-p.5 <- ggplot(slopes, aes(x = V1, y = V2)) +
+p.linear <- ggplot(slopes, aes(x = V1, y = V2)) +
   scale_alpha_identity() +
   geom_point(aes(alpha = 1-slope_0.5))  +
   labs(x = "", y = "") +
@@ -444,20 +443,21 @@ p.5 <- ggplot(slopes, aes(x = V1, y = V2)) +
   theme(axis.text = element_blank()) +
   theme(plot.margin = unit(c(0,0,0,0), "cm")) +
   theme(legend.position = "None") +
-  labs(title = "Flattest Non-Linear Decay (a = 0.5)")
+  labs(title = "Linear Decay")
 
-p.linear <- ggplot(slopes, aes(x = V1, y = V2)) +
-  scale_alpha_identity() +
-  geom_point(aes(alpha = 1-slope_linear))  +
+p.none <- ggplot(slopes, aes(x = V1, y = V2)) +
+  #scale_alpha_identity() +
+  geom_point()  +
   labs(x = "", y = "") +
   theme_classic() +
   theme(axis.text = element_blank()) +
   theme(plot.margin = unit(c(0,0,0,0), "cm")) +
   theme(legend.position = "None") +
-  labs(title = "Linear Decay")
+  labs(title = "No Decay")
 
-final_plot <- grid.arrange(p.125, p.25, p.5, p.linear, ncol = 2) 
+final_plot <- grid.arrange(p.125, p.25, p.linear, p.none, ncol = 2) 
 ```
+
 ## Addressing Issues of Data Quality
 
 Despite collecting data from over 260 participants, only 118 remained after rejecting
