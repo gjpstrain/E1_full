@@ -2,6 +2,7 @@ library(tidyverse)
 library(hablar)
 library(ggpubr)
 library(scales)
+library(forcats)
 
 theme_set(theme_pubr())
 
@@ -51,10 +52,10 @@ df <- all_data %>%
 
 df$size <- gsub('[0-9.]', '', df$size)
 
-# Create bar chart
+# Create bar chart for both
 
-bar_chart <- df %>%
-  ggplot(aes(x = reorder(size, -difference),
+df %>%
+  ggplot(aes(x = fct_reorder(size, difference),
              y = difference, fill = present)) +
   geom_bar(position = position_dodge2(reverse = TRUE, padding = 0),
            stat = "summary", fun.y = "mean", color = "black") +
@@ -74,9 +75,55 @@ bar_chart <- df %>%
         legend.text = element_text(size = 15),
         legend.title = element_text(size = 18))
 
+# Bar Chart for size 
+
+df %>%
+  ggplot(aes(x = fct_rev(fct_reorder(size, difference)),
+             y = difference)) +
+  geom_bar(stat = "summary", fun.y = "mean", color = "black") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = .3,
+               position = position_dodge(-.9)) +
+  theme_minimal() +
+  labs(x = "Condition",
+       y = "Mean Error",
+       title = "",
+       fill = "Contrast\nEncoding",
+       subtitle = "") +
+ scale_x_discrete("", labels = c("Small", "Medium", "Large")) +
+  theme(axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.y = element_text(size = 25),
+        plot.title = element_text(size = 19, face = "bold"),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18)) + 
+  coord_cartesian(ylim = c(0.1, 0.13))
 
 
-ggsave("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600, bg = "white")
+# Bar Chart for encoding
+
+df %>%
+  ggplot(aes(x = fct_rev(fct_reorder(present, difference)),
+             y = difference)) +
+  geom_bar(stat = "summary", fun.y = "mean", color = "black") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = .3,
+               position = position_dodge(-.9)) +
+  theme_minimal() +
+  labs(x = "Condition",
+       y = "Mean Error",
+       title = "",
+       fill = "Contrast\nEncoding",
+       subtitle = "") +
+  scale_x_discrete("", labels = c("Present", "Absent")) +
+  theme(axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.y = element_text(size = 25),
+        plot.title = element_text(size = 19, face = "bold"),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18)) + 
+  coord_cartesian(ylim = c(0.1, 0.14))
+
+
+("bar_chart_MVN.png", bar_chart, height = 6, width = 10, dpi = 600, bg = "white")
 
 # Use the following for larger text; suitable for posters
 

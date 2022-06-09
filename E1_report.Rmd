@@ -31,6 +31,7 @@ library(buildmer)
 library(gridExtra)
 library(MASS)
 library(scales)
+library(lmerTest)
 
 all_data <- read_csv("data/final_data.csv")
 
@@ -234,9 +235,28 @@ model_null <- lmer(difference ~ 1 +
 anova(model, model_null)
 ```
 
+## Checking Presence of Interaction
+
+```{r, echo = FALSE}
+model_no_interact <- lmer(difference ~ size + present +
+       (1 | participant) +
+       (1 | item),
+     data = only_those_passed)
+
+anova(model, model_no_interact)
+```
+
+There was no significant difference between models with and without the interaction.
+
 An ANOVA comparing models with and without our interventions revealed a significant
 effect $\chi^2(5)=91.91, p < .0001$. This effect was driven ratings being significantly 
-higher for Large vs Small plots ($p = .001$) and Medium vs Small plots ($p = .025$), and being higher when the contrast encoding was employed ($p < .0001$).
+higher for Large vs Small plots ($p = .001$) and Medium vs Small plots ($p = .025$), 
+and being higher when the contrast encoding was employed ($p < .0001$).
+
+```{r, echo = FALSE}
+summary(model)
+```
+
 
 There was no effect of an interaction between the two factors. Estimated marginal
 means and contrasts for the two factors can be seen below:
@@ -376,7 +396,10 @@ slopes <- data_with_resid %>%
 
 slopes %>%
   ggplot(aes(x = my_residuals, y = transformed_residual)) +
-  geom_line(aes(colour = decay))
+  geom_line(aes(colour = decay)) +
+  labs(x = "Residual",
+       y = "Contrast Value",
+       title = "Decay Parameters")
 ```
  
 Below are scatterplots all with *r* = 0.6, each labelled with the decay
