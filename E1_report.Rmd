@@ -188,7 +188,7 @@ absent <- only_those_passed %>%
   theme(plot.title = element_text(hjust =0.9)) +
   labs(x = "Objective Correlation Rating",
        y = "Subjective Correlation",
-       title = "Encoding Absent")   
+       title = "Encoding Absent")
 
 final_plot <- grid.arrange(present, absent,ncol = 2, top = "Comparing Correlation Ratings")  
 ```
